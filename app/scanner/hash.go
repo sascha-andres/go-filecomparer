@@ -6,12 +6,12 @@ import (
 	"os"
 
 	"crypto/sha256"
-
-	"github.com/sascha-andres/go-filecomparer/app/filedb"
 )
 
-func hash(fileToHash filedb.File) (result string, err error) {
-	file, err := os.Open(fileToHash.RelativePath)
+func hash(fileInfo string) (result string, err error) {
+	sugar.Debugw("hash", "fileInfo", fileInfo)
+
+	file, err := os.Open(fileInfo)
 	if err != nil {
 		return
 	}

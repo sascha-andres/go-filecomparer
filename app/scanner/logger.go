@@ -27,7 +27,7 @@ var (
 
 func init() {
 	var err error
-	logger, err = zap.NewDevelopment()
+	logger, err = zap.NewProduction()
 	if err != nil {
 		log.Fatal("Error creating logger")
 	}

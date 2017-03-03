@@ -15,9 +15,12 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
+	"sync"
 
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
+	"github.com/sascha-andres/go-filecomparer/app/scanner"
 	"github.com/spf13/cobra"
 )
 
@@ -38,6 +41,20 @@ C file - file was changed`,
 			os.Exit(4)
 		}
 		defer filedb.CloseDB()
+		fs := make(chan (filedb.File))
+		exitChannel := make(chan (bool))
+		var wg sync.WaitGroup
+		go scanner.Scan(fs, exitChannel, &wg)
+		wg.Wait()
+		for {
+			select {
+			case file := <-fs:
+				fmt.Printf("%s: %s\n", file.RelativePath, file.Hash)
+			case <-exitChannel:
+				return
+			default:
+			}
+		}
 	},
 }
 

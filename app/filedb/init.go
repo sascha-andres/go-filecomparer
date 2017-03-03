@@ -56,7 +56,7 @@ func ConnectDB() error {
 
 // CloseDB disconnects from database
 func CloseDB() error {
-	sugar.Debug("ConnectDB")
+	sugar.Debug("CloseDB")
 	return DB.Close()
 }
 
