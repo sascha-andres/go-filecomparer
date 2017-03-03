@@ -46,6 +46,10 @@ var commitCmd = &cobra.Command{
 			sugar.Errorw("Error getting file information", "err", err)
 			os.Exit(4)
 		}
+		if nil == f {
+			logger.Error("File probably does not exist")
+			os.Exit(4)
+		}
 		err = f.Save()
 		if err != nil {
 			sugar.Errorw("Error saving file information", "err", err)
