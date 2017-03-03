@@ -15,7 +15,6 @@
 package scanner
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
@@ -24,7 +23,7 @@ import (
 // GetFileData returns file information for a single file
 func GetFileData(path string) (*filedb.File, error) {
 	if ok, _ := exists(path); !ok {
-		return nil, fmt.Errorf("File does not exist")
+		return nil, nil
 	}
 	result, err := hash(path)
 	if err != nil {

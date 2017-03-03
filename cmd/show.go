@@ -32,37 +32,56 @@ var showCmd = &cobra.Command{
 
 Output looks like this:
 
-DB updated hash
-CURRENT current hash
+INDB hash updated
+FILE hash
 
-Exit code is 0 for identical hashes, else 1`,
+Exit code is   0 for identical hashes
+Exit code is   1 if file is not in database and in filesystem
+Exit code is   2 if file is not in database and not in filesystem
+Exit code is   3 if file is not in filesystem but in database
+Exit code is 100 on any other errors`,
 	Run: func(cmd *cobra.Command, args []string) {
 		activateLogger()
 		if err := filedb.ConnectDB(); err != nil {
 			sugar.Errorw("Error connecting to database", "err", err)
-			os.Exit(4)
+			os.Exit(100)
 		}
 		defer filedb.CloseDB()
 		if "" == viper.GetString("show.file") {
 			fmt.Println("Please provide the file")
-			os.Exit(4)
+			os.Exit(100)
 		}
 		dbFile, err := filedb.Get(viper.GetString("show.file"))
 		if err != nil {
 			sugar.Errorw("Error getting file information from database", "err", err)
-			os.Exit(4)
+			os.Exit(100)
 		}
-		fmt.Printf("DB %v %s\n", dbFile.UpdatedAt, dbFile.Hash)
+		if dbFile != nil && dbFile.ID != 0 {
+			fmt.Printf("INDB %s %v\n", dbFile.Hash, dbFile.UpdatedAt)
+		}
 		f, err := scanner.GetFileData(viper.GetString("show.file"))
 		if err != nil {
 			sugar.Errorw("Error getting file information", "err", err)
-			os.Exit(4)
+			os.Exit(100)
 		}
-		fmt.Printf("CURRENT current %s\n", f.Hash)
-		if f.Hash == dbFile.Hash {
-			os.Exit(0)
+		if f != nil {
+			fmt.Printf("FILE %s\n", f.Hash)
+			if f.Hash == dbFile.Hash {
+				os.Exit(0)
+			}
 		}
-		os.Exit(1)
+		if dbFile == nil || dbFile.ID == 0 {
+			if f == nil {
+				os.Exit(2)
+			} else {
+				os.Exit(1)
+			}
+		} else {
+			if f == nil {
+				os.Exit(3)
+			}
+		}
+		os.Exit(0)
 	},
 }
 
