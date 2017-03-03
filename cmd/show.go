@@ -42,52 +42,63 @@ Exit code is   3 if file is not in filesystem but in database
 Exit code is 100 on any other errors`,
 	Run: func(cmd *cobra.Command, args []string) {
 		activateLogger()
+		if "" == viper.GetString("show.file") {
+			fmt.Println("Please provide the file")
+			os.Exit(100)
+		}
 		if err := filedb.ConnectDB(); err != nil {
 			sugar.Errorw("Error connecting to database", "err", err)
 			os.Exit(100)
 		}
 		defer filedb.CloseDB()
-		if "" == viper.GetString("show.file") {
-			fmt.Println("Please provide the file")
-			os.Exit(100)
-		}
-		dbFile, err := filedb.Get(viper.GetString("show.file"))
+		f, dbFile, err := getData()
 		if err != nil {
-			sugar.Errorw("Error getting file information from database", "err", err)
+			sugar.Errorw("Error connecting to database", "err", err)
 			os.Exit(100)
 		}
-		if dbFile != nil && dbFile.ID != 0 {
-			fmt.Printf("INDB %s %v\n", dbFile.Hash, dbFile.UpdatedAt)
-		}
-		f, err := scanner.GetFileData(viper.GetString("show.file"))
-		if err != nil {
-			sugar.Errorw("Error getting file information", "err", err)
-			os.Exit(100)
-		}
-		if f != nil {
-			fmt.Printf("FILE %s\n", f.Hash)
-			if f.Hash == dbFile.Hash {
-				os.Exit(0)
-			}
-		}
-		if dbFile == nil || dbFile.ID == 0 {
-			if f == nil {
-				os.Exit(2)
-			} else {
-				os.Exit(1)
-			}
-		} else {
-			if f == nil {
-				os.Exit(3)
-			}
-		}
+		returnCodeHandling(f, dbFile)
 		os.Exit(0)
 	},
+}
+
+func getData() (*filedb.File, *filedb.File, error) {
+	dbFile, err := filedb.Get(viper.GetString("show.file"))
+	if err != nil {
+		sugar.Errorw("Error getting file information from database", "err", err)
+		os.Exit(100)
+	}
+	if dbFile != nil && dbFile.ID != 0 {
+		fmt.Printf("INDB %s %v\n", dbFile.Hash, dbFile.UpdatedAt)
+	}
+	f, err := scanner.GetFileData(viper.GetString("show.file"))
+	if err != nil {
+		sugar.Errorw("Error getting file information", "err", err)
+		os.Exit(100)
+	}
+	return f, dbFile, nil
+}
+func returnCodeHandling(f *filedb.File, dbFile *filedb.File) {
+	if f != nil {
+		fmt.Printf("FILE %s\n", f.Hash)
+		if f.Hash == dbFile.Hash {
+			os.Exit(0)
+		}
+	}
+	if dbFile == nil || dbFile.ID == 0 {
+		if f == nil {
+			os.Exit(2)
+		} else {
+			os.Exit(1)
+		}
+	} else {
+		if f == nil {
+			os.Exit(3)
+		}
+	}
 }
 
 func init() {
 	RootCmd.AddCommand(showCmd)
 	showCmd.Flags().StringP("file", "f", "", "File to commit")
 	viper.BindPFlag("show.file", showCmd.Flags().Lookup("file"))
-
 }
