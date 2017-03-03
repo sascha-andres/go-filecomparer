@@ -22,7 +22,8 @@ import (
 type (
 	// File represents the data stored for one file
 	File struct {
-		RelativePath string `gorm:"primary_key"`
+		ID           int `gorm:"primary_key"`
+		RelativePath string
 		Hash         string
 		CreatedAt    time.Time
 		UpdatedAt    time.Time
@@ -47,7 +48,7 @@ func (file File) Save() error {
 	if err != nil {
 		return err
 	}
-	if existing != nil {
+	if existing != nil && existing.ID > 0 {
 		DB.Model(&file).Update("Hash", file.Hash)
 	} else {
 		DB.Model(&file).Create(&file)
@@ -68,7 +69,7 @@ func Get(path string) (*File, error) {
 		return nil, fmt.Errorf("No path for file given")
 	}
 	var file File
-	DB.First(&file)
+	DB.Where("relative_path = ?", path).First(&file)
 	if DB.Error != nil {
 		return nil, DB.Error
 	}

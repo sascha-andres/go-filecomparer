@@ -12,44 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package scanner
 
 import (
-	"log"
+	"fmt"
+	"os"
 
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
-	"github.com/sascha-andres/go-filecomparer/app/scanner"
-	"github.com/spf13/viper"
-
-	"go.uber.org/zap"
 )
 
-var (
-	logger *zap.Logger
-	sugar  *zap.SugaredLogger
-)
-
-func init() {
-	var err error
-	logger, err = zap.NewProduction()
+// GetFileData returns file information for a single file
+func GetFileData(path string) (*filedb.File, error) {
+	if ok, _ := exists(path); !ok {
+		return nil, fmt.Errorf("File does not exist")
+	}
+	result, err := hash(path)
 	if err != nil {
-		log.Fatal("Error creating logger")
+		return nil, err
 	}
-	sugar = logger.Sugar()
+	return &filedb.File{RelativePath: path, Hash: result}, nil
 }
 
-// SetLogger is used to set another logger
-func SetLogger(newLogger *zap.Logger) {
-	logger = newLogger
-	sugar = newLogger.Sugar()
-}
-
-func activateLogger() {
-	if viper.GetBool("verbose") {
-		if log, err := zap.NewDevelopment(); err == nil {
-			scanner.SetLogger(log)
-			filedb.SetLogger(log)
-			SetLogger(log)
-		}
+// exists returns whether the given file or directory exists or not
+func exists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
 	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return true, err
 }

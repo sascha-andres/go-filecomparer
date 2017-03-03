@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
+	"github.com/sascha-andres/go-filecomparer/app/scanner"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -30,14 +31,24 @@ var commitCmd = &cobra.Command{
 	Short: "Accept a changed file",
 	Long:  `Takes a changed file and updates the file database`,
 	Run: func(cmd *cobra.Command, args []string) {
+		activateLogger()
 		if err := filedb.ConnectDB(); err != nil {
 			sugar.Errorw("Error connecting to database", "err", err)
 			os.Exit(4)
 		}
 		defer filedb.CloseDB()
-		fmt.Println(viper.GetString("commit.file"))
 		if "" == viper.GetString("commit.file") {
 			fmt.Println("Please provide the file")
+			os.Exit(4)
+		}
+		f, err := scanner.GetFileData(viper.GetString("commit.file"))
+		if err != nil {
+			sugar.Errorw("Error getting file information", "err", err)
+			os.Exit(4)
+		}
+		err = f.Save()
+		if err != nil {
+			sugar.Errorw("Error saving file information", "err", err)
 			os.Exit(4)
 		}
 	},

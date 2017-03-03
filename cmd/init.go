@@ -26,6 +26,7 @@ var initCmd = &cobra.Command{
 	Long: `Creates the filedatabase ( .filedb ) in the currect directory
 and starts a new index run with auto-commit`,
 	Run: func(cmd *cobra.Command, args []string) {
+		activateLogger()
 		sugar.Info("Initializing database")
 		if err := filedb.Initialize(); err != nil {
 			sugar.Errorw("Error initializing database", "err", err)

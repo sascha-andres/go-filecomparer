@@ -19,6 +19,7 @@ import (
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite" // db plugin for gorm
+	"github.com/spf13/viper"
 )
 
 var (
@@ -47,6 +48,9 @@ func ConnectDB() error {
 	var err error
 	DB, err = gorm.Open("sqlite3", FileDatabasePath)
 	if err == nil {
+		if viper.GetBool("verbose") {
+			DB.LogMode(true)
+		}
 		sugar.Debug("Starting migration")
 		DB.AutoMigrate(&File{})
 		err = DB.Error
