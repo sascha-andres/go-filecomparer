@@ -15,8 +15,16 @@ type (
 	}
 )
 
+var (
+	// ErrDatabaseNotPresent will be returned whenever a crud operation is performed in a non-initialized diretory
+	ErrDatabaseNotPresent = fmt.Errorf("Database file does not exist. Please run init")
+)
+
 // Save stores file information in
 func (file File) Save() error {
+	if nil == DB {
+		return ErrDatabaseNotPresent
+	}
 	if "" == file.RelativePath {
 		return fmt.Errorf("No path for file given")
 	}
@@ -37,6 +45,9 @@ func (file File) Save() error {
 
 // Get retrieves file information from the database
 func Get(path string) (*File, error) {
+	if nil == DB {
+		return nil, ErrDatabaseNotPresent
+	}
 	if "" == path {
 		return nil, fmt.Errorf("No path for file given")
 	}
@@ -50,6 +61,9 @@ func Get(path string) (*File, error) {
 
 // Delete removes a file from the database
 func (file File) Delete() error {
+	if nil == DB {
+		return ErrDatabaseNotPresent
+	}
 	if "" == file.RelativePath {
 		return fmt.Errorf("No path for file given")
 	}
