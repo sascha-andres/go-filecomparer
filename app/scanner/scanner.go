@@ -12,24 +12,4 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package filedb
-
-import (
-	"log"
-
-	"go.uber.org/zap"
-)
-
-var (
-	logger *zap.Logger
-	sugar  *zap.SugaredLogger
-)
-
-func init() {
-	var err error
-	logger, err = zap.NewDevelopment()
-	if err != nil {
-		log.Fatal("Error creating logger")
-	}
-	sugar = logger.Sugar()
-}
+package scanner
