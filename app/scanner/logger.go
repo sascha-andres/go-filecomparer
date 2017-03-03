@@ -33,3 +33,9 @@ func init() {
 	}
 	sugar = logger.Sugar()
 }
+
+// SetLogger is used to set another logger
+func SetLogger(newLogger *zap.Logger) {
+	logger = newLogger
+	sugar = newLogger.Sugar()
+}

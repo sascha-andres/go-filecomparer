@@ -67,12 +67,12 @@ func Get(path string) (*File, error) {
 	if "" == path {
 		return nil, fmt.Errorf("No path for file given")
 	}
-	var file *File
-	DB.Where("RelativePath = ?", path).First(file)
+	var file File
+	DB.First(&file)
 	if DB.Error != nil {
 		return nil, DB.Error
 	}
-	return file, nil
+	return &file, nil
 }
 
 // Delete removes a file from the database

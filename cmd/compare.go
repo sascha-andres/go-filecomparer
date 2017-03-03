@@ -22,6 +22,8 @@ import (
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
 	"github.com/sascha-andres/go-filecomparer/app/scanner"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 // compareCmd represents the compare command
@@ -32,15 +34,22 @@ var compareCmd = &cobra.Command{
 
 For each change a line will be printed:
 
-D file - file was deleted
+D file - file was deleted [not yet implenented]
 A file - file was added
-C file - file was changed`,
+C file - file was changed
+
+For an unchanged file, nothing will be printed`,
 	Run: func(cmd *cobra.Command, args []string) {
 		if err := filedb.ConnectDB(); err != nil {
 			sugar.Errorw("Error connecting to database", "err", err)
 			os.Exit(4)
 		}
 		defer filedb.CloseDB()
+		if viper.GetBool("verbose") {
+			if log, err := zap.NewDevelopment(); err == nil {
+				scanner.SetLogger(log)
+			}
+		}
 		fs := make(chan (filedb.File))
 		exitChannel := make(chan (bool))
 		var wg sync.WaitGroup
@@ -49,7 +58,17 @@ C file - file was changed`,
 		for {
 			select {
 			case file := <-fs:
-				fmt.Printf("%s: %s\n", file.RelativePath, file.Hash)
+				f, err := filedb.Get(file.RelativePath)
+				if err != nil {
+					sugar.Errorw("Error getting file from database", "RelativePath", file.RelativePath)
+				}
+				if nil == f || "" == f.RelativePath {
+					fmt.Printf("A %s\n", file.RelativePath)
+				} else {
+					if f.Hash != file.Hash {
+						fmt.Printf("C %s\n", file.RelativePath)
+					}
+				}
 			case <-exitChannel:
 				return
 			default:

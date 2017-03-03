@@ -17,8 +17,11 @@ package cmd
 import (
 	"os"
 
+	"fmt"
+
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // commitCmd represents the commit command
@@ -32,20 +35,16 @@ var commitCmd = &cobra.Command{
 			os.Exit(4)
 		}
 		defer filedb.CloseDB()
+		fmt.Println(viper.GetString("commit.file"))
+		if "" == viper.GetString("commit.file") {
+			fmt.Println("Please provide the file")
+			os.Exit(4)
+		}
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(commitCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// commitCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// commitCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
+	commitCmd.Flags().StringP("file", "f", "", "File to commit")
+	viper.BindPFlag("commit.file", commitCmd.Flags().Lookup("file"))
 }
