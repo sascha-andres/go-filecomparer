@@ -30,6 +30,7 @@ var (
 
 // Initialize called to create an empty database
 func Initialize() error {
+	sugar.Debug("Initialize")
 	if nil != DB {
 		if err := removeDatabase(); err != nil {
 			return err
@@ -40,9 +41,11 @@ func Initialize() error {
 
 // ConnectDB opens a database and migrates
 func ConnectDB() error {
+	sugar.Debug("ConnectDB")
 	var err error
 	DB, err = gorm.Open("sqlite3", FileDatabasePath)
-	if err != nil {
+	if err == nil {
+		sugar.Debug("Starting migration")
 		DB.AutoMigrate(&File{})
 		err = DB.Error
 	}
@@ -51,10 +54,12 @@ func ConnectDB() error {
 
 // CloseDB disconnects from database
 func CloseDB() error {
+	sugar.Debug("ConnectDB")
 	return DB.Close()
 }
 
 func removeDatabase() error {
+	sugar.Debug("removeDatabase")
 	if ok, _ := exists(FileDatabasePath); ok {
 		return os.Remove(FileDatabasePath)
 	}

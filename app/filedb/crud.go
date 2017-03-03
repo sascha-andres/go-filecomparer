@@ -22,6 +22,7 @@ var (
 
 // Save stores file information in
 func (file File) Save() error {
+	sugar.Debug("Save", "file", file)
 	if nil == DB {
 		return ErrDatabaseNotPresent
 	}
@@ -45,6 +46,7 @@ func (file File) Save() error {
 
 // Get retrieves file information from the database
 func Get(path string) (*File, error) {
+	sugar.Debug("Get", "path", path)
 	if nil == DB {
 		return nil, ErrDatabaseNotPresent
 	}
@@ -61,6 +63,7 @@ func Get(path string) (*File, error) {
 
 // Delete removes a file from the database
 func (file File) Delete() error {
+	sugar.Debug("Delete", "file", file)
 	if nil == DB {
 		return ErrDatabaseNotPresent
 	}
@@ -72,5 +75,5 @@ func (file File) Delete() error {
 		return err
 	}
 	DB.Delete(existing)
-	return nil
+	return DB.Error
 }
