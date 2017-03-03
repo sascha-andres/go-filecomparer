@@ -15,10 +15,13 @@
 package cmd
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/sascha-andres/go-filecomparer/app/filedb"
+	"github.com/sascha-andres/go-filecomparer/app/scanner"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // showCmd represents the show command
@@ -30,27 +33,42 @@ var showCmd = &cobra.Command{
 Output looks like this:
 
 DB updated hash
-CURRENT current hash`,
+CURRENT current hash
+
+Exit code is 0 for identical hashes, else 1`,
 	Run: func(cmd *cobra.Command, args []string) {
+		activateLogger()
 		if err := filedb.ConnectDB(); err != nil {
 			sugar.Errorw("Error connecting to database", "err", err)
 			os.Exit(4)
 		}
 		defer filedb.CloseDB()
+		if "" == viper.GetString("show.file") {
+			fmt.Println("Please provide the file")
+			os.Exit(4)
+		}
+		dbFile, err := filedb.Get(viper.GetString("show.file"))
+		if err != nil {
+			sugar.Errorw("Error getting file information from database", "err", err)
+			os.Exit(4)
+		}
+		fmt.Printf("DB %v %s\n", dbFile.UpdatedAt, dbFile.Hash)
+		f, err := scanner.GetFileData(viper.GetString("show.file"))
+		if err != nil {
+			sugar.Errorw("Error getting file information", "err", err)
+			os.Exit(4)
+		}
+		fmt.Printf("CURRENT current %s\n", f.Hash)
+		if f.Hash == dbFile.Hash {
+			os.Exit(0)
+		}
+		os.Exit(1)
 	},
 }
 
 func init() {
 	RootCmd.AddCommand(showCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// showCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// showCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	showCmd.Flags().StringP("file", "f", "", "File to commit")
+	viper.BindPFlag("show.file", showCmd.Flags().Lookup("file"))
 
 }
