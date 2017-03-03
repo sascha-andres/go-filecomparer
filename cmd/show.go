@@ -15,8 +15,9 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
+	"github.com/sascha-andres/go-filecomparer/app/filedb"
 	"github.com/spf13/cobra"
 )
 
@@ -31,8 +32,11 @@ Output looks like this:
 DB updated hash
 CURRENT current hash`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("show called")
+		if err := filedb.ConnectDB(); err != nil {
+			sugar.Errorw("Error connecting to database", "err", err)
+			os.Exit(4)
+		}
+		defer filedb.CloseDB()
 	},
 }
 

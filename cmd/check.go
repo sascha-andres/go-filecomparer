@@ -15,8 +15,9 @@
 package cmd
 
 import (
-	"fmt"
+	"os"
 
+	"github.com/sascha-andres/go-filecomparer/app/filedb"
 	"github.com/spf13/cobra"
 )
 
@@ -32,8 +33,11 @@ Return code 2 if deleted
 Return code 3 if added
 Return code 4 on error`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// TODO: Work your own magic here
-		fmt.Println("check called")
+		if err := filedb.ConnectDB(); err != nil {
+			sugar.Errorw("Error connecting to database", "err", err)
+			os.Exit(4)
+		}
+		defer filedb.CloseDB()
 	},
 }
 

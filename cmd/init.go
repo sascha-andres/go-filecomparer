@@ -30,6 +30,7 @@ and starts a new index run with auto-commit`,
 		if err := filedb.Initialize(); err != nil {
 			sugar.Errorw("Error initializing database", "err", err)
 		}
+		defer filedb.CloseDB()
 	},
 }
 
