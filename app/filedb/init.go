@@ -32,9 +32,11 @@ var (
 func Initialize() error {
 	sugar.Debug("Initialize")
 	if nil != DB {
-		if err := removeDatabase(); err != nil {
-			return err
-		}
+		DB.Close()
+		DB = nil
+	}
+	if err := removeDatabase(); err != nil {
+		return err
 	}
 	return ConnectDB()
 }
