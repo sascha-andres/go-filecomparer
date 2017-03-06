@@ -1,5 +1,7 @@
 # go-filecomparer
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/sascha-andres/go-filecomparer)](https://goreportcard.com/report/github.com/sascha-andres/go-filecomparer) [![codebeat badge](https://codebeat.co/badges/d0ff7154-6a5b-45a6-82af-4bb98fee538d)](https://codebeat.co/projects/github-com-sascha-andres-go-filecomparer)
+
 Save the current state of files and compare to detect changes
 
 ## How to use
